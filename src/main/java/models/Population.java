@@ -1,10 +1,12 @@
-package models;
+package main.java.models;
 
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Random;
+import java.io.Serializable;
 
-public class Population {
+public class Population implements Serializable {
+    private static final long serialVersionUID = 1L;
     private List<Individual> individuals;
     private List<Individual.DataPoint> trainingData;
     private Random random;

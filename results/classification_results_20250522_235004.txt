@@ -1,0 +1,15 @@
+Classification Results
+====================
+
+Classifier: GP Classifier
+Accuracy: 89.07815631262525
+F1 Score: 0.8877445932028836
+Model Structure: (((((9.896891724309263 / 1) / (null / 4)) * ((3 / 8.565376664457629) - (9.537775685726977 * 0))) * ((((((null / 1) / (null / 4)) 6.606814937768348 null) / 1) / (0 - 2)) + 3.4492210678856985)) + (null + (4 / (null / (8.328106838454563 / 3.0140063298322293)))))
+
+Confusion Matrix:
+=== Confusion Matrix ===
+
+   a   b   <-- classified as
+ 458  12 |   a = 0
+  97 431 |   b = 1
+

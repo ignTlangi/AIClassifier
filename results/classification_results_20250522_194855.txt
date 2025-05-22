@@ -1,0 +1,15 @@
+Classification Results
+====================
+
+Classifier: MLP Classifier
+Accuracy: 90.08016032064128
+F1 Score: 0.908418131359852
+Model Structure: MLP Classifier (Python)
+
+Confusion Matrix:
+=== Confusion Matrix ===
+
+   a   b   <-- classified as
+ 408  62 |   a = 0
+  37 491 |   b = 1
+

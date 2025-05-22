@@ -5,8 +5,8 @@ import weka.core.Instance;
 import weka.core.Instances;
 import weka.core.Capabilities;
 import weka.core.Capabilities.Capability;
-import models.Individual;
-import models.Population;
+import main.java.models.Individual;
+import main.java.models.Population;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Random;
@@ -15,15 +15,23 @@ public class GPClassifier extends AbstractClassifier {
     private Population population;
     private Individual bestIndividual;
     private Random random;
-    private int populationSize = 100;
-    private int generations = 50;
-    private double mutationRate = 0.1;
+    private int populationSize = 50;
+    private int generations = 30;
+    private double mutationRate = 0.2;
     private double crossoverRate = 0.8;
     private long seed;
+    private int noImprovementLimit = 8;
 
     public void setSeed(long seed) {
         this.seed = seed;
         this.random = new Random(seed);
+    }
+
+    /**
+     * Set the early stopping threshold (number of generations with no improvement before stopping)
+     */
+    public void setNoImprovementLimit(int limit) {
+        this.noImprovementLimit = limit;
     }
 
     @Override
@@ -48,10 +56,27 @@ public class GPClassifier extends AbstractClassifier {
         population = new Population(populationSize, trainingData, random);
         
         // Evolve population
+        double bestFitness = Double.NEGATIVE_INFINITY;
+        int noImprovementCount = 0;
+        int actualGenerations = 0;
+        System.out.println("[GP] Early stopping threshold: " + noImprovementLimit + " generations with no improvement.");
         for (int gen = 0; gen < generations; gen++) {
             population.evolve(mutationRate, crossoverRate);
+            double currentBestFitness = population.getBestIndividual().getFitness();
+            System.out.println("Generation " + gen + ", Best Fitness: " + currentBestFitness);
+            actualGenerations++;
+            if (currentBestFitness > bestFitness) {
+                bestFitness = currentBestFitness;
+                noImprovementCount = 0;
+            } else {
+                noImprovementCount++;
+            }
+            if (noImprovementCount >= noImprovementLimit) { // Configurable early stopping
+                System.out.println("[GP] Stopping early at generation " + gen + " due to no improvement for " + noImprovementLimit + " generations.");
+                break;
+            }
         }
-
+        System.out.println("[GP] Training completed after " + actualGenerations + " generations (max allowed: " + generations + ").");
         // Store best individual
         bestIndividual = population.getBestIndividual();
     }

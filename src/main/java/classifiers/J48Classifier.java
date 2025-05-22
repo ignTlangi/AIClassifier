@@ -15,15 +15,19 @@ public class J48Classifier extends AbstractClassifier {
     public J48Classifier() {
         j48 = new J48();
         isTrained = false;
-        // Set default parameters
-        j48.setConfidenceFactor(0.25f);
-        j48.setMinNumObj(2);
-        j48.setUnpruned(false);
+        // Set improved parameters
+        j48.setConfidenceFactor(0.1f);  // Lower confidence factor to prevent over-pruning
+        j48.setMinNumObj(10);           // Increase minimum instances per leaf
+        j48.setUnpruned(false);         // Keep pruning but less aggressive
+        j48.setUseLaplace(true);        // Use Laplace smoothing for better probability estimates
     }
 
     public void setSeed(long seed) {
         this.seed = seed;
-        this.j48.setSeed((int) seed);
+        // Only set the seed if reduced error pruning is enabled
+        if (j48.getReducedErrorPruning()) {
+            this.j48.setSeed((int) seed);
+        }
     }
 
     @Override

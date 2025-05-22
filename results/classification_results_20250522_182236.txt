@@ -1,0 +1,22 @@
+Classification Results
+====================
+
+Classifier: J48 Classifier
+Accuracy: 52.30460921843687
+F1 Score: 0.681392235609103
+Model Structure: J48 pruned tree
+------------------
+: 1 (998.0/470.0)
+
+Number of Leaves  : 	1
+
+Size of the tree : 	1
+
+
+Confusion Matrix:
+=== Confusion Matrix ===
+
+   a   b   <-- classified as
+  13 457 |   a = 0
+  19 509 |   b = 1
+

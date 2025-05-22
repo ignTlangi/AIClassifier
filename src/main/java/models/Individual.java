@@ -1,11 +1,13 @@
-package models;
+package main.java.models;
 
 import java.util.List;
 import java.util.Random;
 import java.util.ArrayList;
+import java.io.Serializable;
 
 // TODO: Define the structure for an individual in the GP population
-public class Individual {
+public class Individual implements Serializable {
+    private static final long serialVersionUID = 1L;
     // Represents the program tree for this individual
     private Node root;
     private double fitness;
@@ -51,28 +53,68 @@ public class Individual {
 
     // Evaluates the fitness of the individual
     public double evaluate(DataPoint point) {
-        return evaluateNode(root, point);
+        if (root == null) {
+            return 0.5; // Default prediction if no tree exists
+        }
+        try {
+            return evaluateNode(root, point);
+        } catch (Exception e) {
+            System.err.println("Error evaluating node: " + e.getMessage());
+            return 0.5; // Default prediction on error
+        }
     }
 
     private double evaluateNode(Node node, DataPoint point) {
+        if (node == null) {
+            return 0; // or some default value
+        }
         if (node.isTerminal()) {
             try {
+                // Try to parse as feature index
                 int featureIndex = Integer.parseInt(node.value);
-                return point.features[featureIndex];
+                if (featureIndex >= 0 && featureIndex < point.features.length) {
+                    return point.features[featureIndex];
+                } else {
+                    System.err.println("Feature index out of bounds: " + featureIndex + 
+                                       " (max: " + (point.features.length-1) + ")");
+                    return 0.0;
+                }
             } catch (NumberFormatException e) {
-                return Double.parseDouble(node.value);
+                try {
+                    // Try to parse as constant
+                    return Double.parseDouble(node.value);
+                } catch (NumberFormatException e2) {
+                    System.err.println("Invalid node value: " + node.value);
+                    return 0.0;
+                }
             }
         }
-
+        
+        // Process operators
         double leftValue = evaluateNode(node.left, point);
         double rightValue = evaluateNode(node.right, point);
-
-        switch (node.value) {
-            case "+": return leftValue + rightValue;
-            case "-": return leftValue - rightValue;
-            case "*": return leftValue * rightValue;
-            case "/": return rightValue != 0 ? leftValue / rightValue : 0;
-            default: return 0;
+        
+        // Check if the node value is actually an operator
+        if (node.value.equals("+")) {
+            return leftValue + rightValue;
+        } else if (node.value.equals("-")) {
+            return leftValue - rightValue;
+        } else if (node.value.equals("*")) {
+            return leftValue * rightValue;
+        } else if (node.value.equals("/")) {
+            if (Math.abs(rightValue) < 1e-10) {
+                // Avoid division by zero
+                return 1.0; 
+            }
+            return leftValue / rightValue;
+        } else {
+            // Try to parse as a number if not a recognized operator
+            try {
+                return Double.parseDouble(node.value);
+            } catch (NumberFormatException e) {
+                System.err.println("Unknown operator: " + node.value);
+                return 0;
+            }
         }
     }
 
@@ -98,12 +140,15 @@ public class Individual {
 
     // Method for deep copying an individual (important for selection/reproduction)
     public Individual deepCopy() {
-        return new Individual(root.deepCopy());
+        return new Individual(root != null ? root.deepCopy() : null);
     }
 
     public Node getRandomNode(Random random) {
         List<Node> nodes = new ArrayList<>();
         collectNodes(root, nodes);
+        if (nodes.isEmpty()) {
+            return null;
+        }
         return nodes.get(random.nextInt(nodes.size()));
     }
 
@@ -120,8 +165,8 @@ public class Individual {
     }
 
     // DataPoint class for representing training and testing data
-    public static class DataPoint {
-        // Fields for stock data features and classification label
+    public static class DataPoint implements Serializable {
+        private static final long serialVersionUID = 1L;
         public final double[] features;
         public final double label; // e.g., 0 for sell, 1 for buy
 
@@ -131,7 +176,8 @@ public class Individual {
         }
     }
 
-    public static class Node {
+    public static class Node implements Serializable {
+        private static final long serialVersionUID = 1L;
         public String value;
         public Node left;
         public Node right;
@@ -158,7 +204,10 @@ public class Individual {
             if (isTerminal()) {
                 return value;
             }
-            return "(" + left.toString() + " " + value + " " + right.toString() + ")";
+            
+            String leftStr = left != null ? left.toString() : "null";
+            String rightStr = right != null ? right.toString() : "null";
+            return "(" + leftStr + " " + value + " " + rightStr + ")";
         }
     }
 }
